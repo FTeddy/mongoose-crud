@@ -1,10 +1,12 @@
 'use strict'
 const Transaction = require('../models/Transaction.js')
+const Book = require('../models/Book.js')
 
 
 class TransactionController {
 
   static createTransaction(req, res) {
+    // console.log(req.body);
     // return res.send('create transaction');
 
     if (!req.body.days) {
@@ -23,6 +25,62 @@ class TransactionController {
       return res.status(400).json({
         message: 'booklist cannot be empty. What are you borrowing?'
       })
+    } else {
+      if (req.body.booklist.constructor === Array) {
+        // I CANT DO THIS I NEED ASYNC AWAIT HERE
+        for (let i = 0; i < req.body.booklist.length; i++) {
+          let bookId = req.body.booklist[i]
+          console.log(bookId);
+          Book.findById(bookId)
+            .exec()
+            .then(foundBook => {
+              console.log(foundBook);
+              if (foundBook.stock < 1) {
+                return res.status(400).json({
+                  message: `Cannot borrow. book ${foundBook.title} does not have enough stock`
+                })
+              } else {
+                let updatedStock = {stock : foundBook.stock - 1}
+                console.log(updatedStock);
+                Book.findOneAndUpdate(bookId, updatedStock)
+                  .exec()
+                  .then(updatedBook => {
+                    console.log('book stock updated');
+                  })
+                  .catch(err => {
+                    res.status(500).json({
+                      message: err.message
+                    })
+                  })
+              }
+            })
+        }
+      } else {
+        let bookId = req.body.booklist[i]
+        Book.findById(bookId)
+          .exec()
+          .then(foundBook => {
+            console.log(foundBook);
+            if (foundBook.stock < 1) {
+              return res.status(400).json({
+                message: `Cannot borrow. book ${foundBook.title} does not have enough stock`
+              })
+            } else {
+              let updatedStock = {stock : foundBook.stock - 1}
+              Book.findOneAndUpdate(bookId, updatedStock)
+                .exec()
+                .then(updatedBook => {
+                  console.log('book stock updated');
+                })
+                .catch(err => {
+                  res.status(500).json({
+                    message: err.message
+                  })
+                })
+            }
+          })
+      }
+
     }
 
     let days = Number(req.body.days)
