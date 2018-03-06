@@ -11,7 +11,8 @@ router.get('/:_id', TransactionController.readOneTransaction);
 router.put('/edit/:_id', TransactionController.updateTransaction);
 router.delete('/delete/:_id', TransactionController.deleteTransaction);
 
-// router.patch('/', TransactionController.createTransaction);
 
+// return the books
+router.patch('/return/:transID', TransactionController.returnBooks);
 
 module.exports = router;

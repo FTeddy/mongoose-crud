@@ -11,7 +11,12 @@ class TransactionController {
     let newTransaction = new Transaction()
     newTransaction.member = req.body.memberId;
     newTransaction.days = days;
-    newTransaction.due_date = +new Date()+days*24*60*60*1000
+
+    let dueDate= new Date();
+    dueDate.setDate(dueDate.getDate()+days);
+
+    newTransaction.due_date = dueDate;
+    newTransaction.booklist = req.body.booklist;
 
     // console.log(newTransaction);
     newTransaction.save()
@@ -32,7 +37,8 @@ class TransactionController {
     // return res.send('read all transaction');
     Transaction.find()
       .limit(10)
-      // .populate('Costumer')
+      .populate('member')
+      .populate('booklist')
       .exec()
       .then(foundTransactions => {
         res.status(200).json({
@@ -52,6 +58,8 @@ class TransactionController {
     Transaction.findOne({
       _id: req.params._id
     })
+      .populate('member')
+      .populate('booklist')
       .exec()
       .then(foundTransaction => {
         res.status(200).json({
@@ -70,24 +78,36 @@ class TransactionController {
     // res.send('update a transaction');
     let id = req.params._id;
     let updateData = {}
-    if (req.body.member) {updateData.member = req.body.memberId}
-    if (req.body.days) {updateData.days = req.body.days}
-    if (req.body.due_date) {updateData.due_date = req.body.due_date}
 
-    Transaction.findByIdAndUpdate(id, updateData)
+    Transaction.findById(id)
       .exec()
-      .then(updatedTransaction => {
-        res.status(200).json({
-          message: 'Updated Transaction',
-          updatedTransaction: updatedTransaction,
-          updateData: updateData
-        })
+      .then(foundTransaction => {
+        if (req.body.member) {updateData.member = req.body.memberId}
+        if (req.body.days) {
+          updateData.days = Number(req.body.days);
+          let due_date_new = new Date(foundTransaction.out_date);
+          due_date_new.setDate(due_date_new.getDate()+Number(req.body.days));
+          updateData.due_date = due_date_new;
+        }
+        // console.log(updateData);
+
+        Transaction.findOneAndUpdate(id, updateData)
+          .exec()
+          .then(updatedTransaction => {
+            res.status(200).json({
+              message: 'Updated Transaction',
+              updatedTransaction: updatedTransaction,
+              updateData: updateData
+            })
+          })
+          .catch(err => {
+            res.status(500).json({
+              message: err.message
+            })
+          })
+
       })
-      .catch(err => {
-        res.status(500).json({
-          message: err.message
-        })
-      })
+
   }
 
   static deleteTransaction(req, res) {
@@ -106,6 +126,52 @@ class TransactionController {
         res.status(500).json({
           message: err.message
         })
+      })
+  }
+
+
+  static returnBooks(req, res) {
+    let id = req.params.transID;
+    let updateData = {};
+    let inDate = new Date()
+    // inDate.setDate(20)
+
+    updateData.in_date = inDate;
+
+    Transaction.findById(id)
+      .exec()
+      .then(foundTransaction => {
+        // console.log(foundTransaction);
+        let dateDiff = function (dateA, dateB){
+          let utc1 = Date.UTC(dateA.getFullYear(), dateA.getMonth(), dateA.getDate());
+          let utc2 = Date.UTC(dateB.getFullYear(), dateB.getMonth(), dateB.getDate());
+          return Math.floor((utc1 - utc2) / (1000 * 60 * 60 * 24));
+        }
+        // console.log(dateDiff(inDate, foundTransaction.due_date));
+        let fine = 0
+        let dateGap = dateDiff(inDate,foundTransaction.due_date)
+        if (dateGap > 0) {
+          fine = dateGap * 3000
+        }
+
+        updateData.fine = fine;
+        // console.log(updateData);
+
+        Transaction.findOneAndUpdate(id, updateData)
+          .exec()
+          .then(updatedTransaction => {
+            res.status(200).json({
+              message: 'Returned the books',
+              updatedTransaction: updatedTransaction,
+              updateData: updateData
+            })
+          })
+          .catch(err => {
+            res.status(500).json({
+              message: err.message
+            })
+          })
+
       })
   }
 
