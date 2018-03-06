@@ -6,8 +6,26 @@ class TransactionController {
 
   static createTransaction(req, res) {
     // return res.send('create transaction');
-    let days = Number(req.body.days)
 
+    if (!req.body.days) {
+      return res.status(400).json({
+        message: 'days borrowed not defined'
+      })
+    }
+
+    if (!req.body.memberId) {
+      return res.status(400).json({
+        message: 'memberId cannot be empty. Who is borrowing?'
+      })
+    }
+
+    if (!req.body.booklist) {
+      return res.status(400).json({
+        message: 'booklist cannot be empty. What are you borrowing?'
+      })
+    }
+
+    let days = Number(req.body.days)
     let newTransaction = new Transaction()
     newTransaction.member = req.body.memberId;
     newTransaction.days = days;
