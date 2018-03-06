@@ -12,12 +12,18 @@ const TransactionSchema = new Schema ({
     default: Date.now
   },
   due_date: Date,
-  in_date: Date,
-  fine: Number,
+  in_date: {
+    type: Date,
+    default: null
+  },
+  fine: {
+    type: Number,
+    default: 0
+  },
   booklist: [{
     type: Schema.Types.ObjectId,
     ref: 'Book'
-  }]
+  }],
   createdAt: {
     type: Date,
     default: Date.now

@@ -3,7 +3,6 @@ const BookController = require('../controllers/bookController.js').BookControlle
 var router = express.Router();
 
 
-/* GET users listing. */
 router.post('/add', BookController.createBook);
 
 router.get('/library', BookController.readBook);

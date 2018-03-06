@@ -11,6 +11,7 @@ const mongoose = require('mongoose')
 const index = require('./routes/index');
 const books = require('./routes/books');
 const costumers = require('./routes/costumers');
+const transactions = require('./routes/transactions');
 
 // connect to database
 mongoose.connect('mongodb://localhost:27017/mongooseNewb');
@@ -32,6 +33,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', index);
 app.use('/books', books);
 app.use('/costumers', costumers);
+app.use('/transactions', transactions);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
